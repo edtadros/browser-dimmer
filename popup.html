@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Browser Dimmer</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row header">Brightness</div>
+      <div class="row">
+        <input id="slider" type="range" min="0" max="100" step="1" value="100" />
+      </div>
+      <div class="row small">
+        <span id="value">100%</span>
+      </div>
+      <div class="row controls">
+        <button id="resetBtn" title="Reset to 100%">
+          <img class="icon" width="16" height="16" src="icons/reset.svg" alt="Reset" />
+          <span>Reset</span>
+        </button>
+      </div>
+      <div class="row hint small">Only affects the current tab.</div>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+  </html>
