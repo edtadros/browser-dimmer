@@ -52,13 +52,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           target: { tabId },
           files: ['content.js'],
         });
+        // Mark as not restricted (injection succeeded) and refresh icon
+        restrictedTabs.delete(tabId);
+        await updateIconForTab(tabId);
         // After injection, return current brightness for convenience
         const value = await getBrightness(tabId);
         sendResponse({ ok: true, value });
       } catch (e) {
         try {
-          // Best-effort: mark icon disabled for this tab if injection failed
-          await updateIconForTab(message.tabId);
+          // Mark restricted and update icon if injection failed
+          const tabId = Number(message.tabId);
+          restrictedTabs.add(tabId);
+          await updateIconForTab(tabId);
         } catch {}
         sendResponse({ ok: false, error: String(e) });
       }
@@ -117,26 +122,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // ---- Action icon (monochrome line icon) ----
 const ICON_FG = '#a8a9a9';
 const ICON_BG = '#202121';
-
-function isRestrictedUrl(url) {
-  if (!url) return false;
-  try {
-    const u = new URL(url);
-    const restrictedProtocols = ['chrome:', 'chrome-extension:', 'chrome-devtools:'];
-    if (restrictedProtocols.includes(u.protocol)) return true;
-    const restrictedHosts = new Set(['chrome.google.com', 'chromewebstore.google.com']);
-    return restrictedHosts.has(u.hostname);
-  } catch {
-    return false;
-  }
-}
+// Track tabs where injection failed (considered restricted)
+const restrictedTabs = new Set();
 
 async function updateIconForTab(tabId) {
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const targetTab = tabId ? await chrome.tabs.get(tabId) : tab;
-    if (!targetTab) return;
-    const restricted = isRestrictedUrl(targetTab.pendingUrl || targetTab.url);
+    if (typeof tabId !== 'number') return;
+    const restricted = restrictedTabs.has(tabId);
     if (typeof OffscreenCanvas === 'undefined') return;
     const sizes = [16, 32, 48, 128];
     const svgText = await getBacklightSvg();
@@ -144,7 +136,7 @@ async function updateIconForTab(tabId) {
     for (const s of sizes) {
       imageData[s] = await rasterizeIconFromSvg(svgText, s, restricted);
     }
-    await chrome.action.setIcon({ imageData, tabId: targetTab.id });
+    await chrome.action.setIcon({ imageData, tabId });
   } catch (_e) {
     // ignore
   }
@@ -207,11 +199,12 @@ async function rasterizeIconFromSvg(svgText, size, disabled) {
   return ctx.getImageData(0, 0, size, size);
 }
 
-// Update icon on install/activation/navigation
-chrome.runtime.onInstalled.addListener(() => { updateIconForTab(); });
+// Update icon on activation/navigation using last-known state; actual detection occurs on popup open
+chrome.runtime.onInstalled.addListener(() => { /* no-op until popup probes */ });
 chrome.tabs.onActivated.addListener(({ tabId }) => { updateIconForTab(tabId); });
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading' || changeInfo.url) {
     updateIconForTab(tabId);
   }
 });
+chrome.tabs.onRemoved.addListener((tabId) => { restrictedTabs.delete(tabId); });

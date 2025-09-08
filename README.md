@@ -18,10 +18,8 @@ Adjust the brightness of the current page only using a simple slider from the ex
 3. Click "Load unpacked" and select this folder.
 4. Pin the extension (optional), then click its icon to adjust brightness on the current tab.
 
-## Notes
-- Some pages do not allow extensions to run content scripts; brightness will not apply there. Examples:
-  - Chrome Web Store: `chromewebstore.google.com` and `chrome.google.com`
-  - Browser internals: `chrome://*`, `chrome-extension://*`, `chrome-devtools://*`
+- ## Notes
+- Some pages do not allow extensions to run content scripts; brightness will not apply there. The extension detects this by attempting to inject on popup open and will disable controls with an explanatory message (no hardcoded URL list).
 - Existing tabs opened before installation may require a refresh to activate the content script.
 - Default brightness is 100% (no change). The extension supports up to 200% internally to allow potential brightening; the popup shows 0–100% by default.
 
