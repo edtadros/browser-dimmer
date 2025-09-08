@@ -7,8 +7,9 @@
   const tab = await getActiveTab();
   if (!tab) return;
 
-  // If the current page is restricted by Chrome, disable controls and inform the user
-  if (isRestrictedUrl(tab.pendingUrl || tab.url)) {
+  // Ensure content is injected on the active tab (activeTab permission applies via user gesture)
+  const injected = await sendMessage({ type: 'ensureInjected', tabId: tab.id });
+  if (!injected || !injected.ok) {
     slider.disabled = true;
     resetBtn.disabled = true;
     if (hintEl) {
@@ -51,22 +52,6 @@ function getActiveTab() {
       resolve(tabs && tabs[0]);
     });
   });
-}
-
-function isRestrictedUrl(url) {
-  if (!url) return false;
-  try {
-    const u = new URL(url);
-    const restrictedProtocols = ['chrome:', 'chrome-extension:', 'chrome-devtools:'];
-    if (restrictedProtocols.includes(u.protocol)) return true;
-    const restrictedHosts = new Set([
-      'chrome.google.com', // legacy web store
-      'chromewebstore.google.com', // new web store domain
-    ]);
-    return restrictedHosts.has(u.hostname);
-  } catch {
-    return false;
-  }
 }
 
 function sendMessage(msg) {

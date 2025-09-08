@@ -35,7 +35,5 @@ Adjust the brightness of the current page only using a simple slider from the ex
 
 ## Icons
 - Source SVGs: `icons/backlight.svg` (toolbar) and `icons/reset.svg` (popup button)
-- Generate PNGs for the manifest:
-  - `npm install` (first time only)
-  - `npm run generate:icons`
-  - Outputs to `icons/generated/icon{16,32,48,128}.png` and wired in `manifest.json` and `action.default_icon`.
+- Pre-generated PNGs used by the manifest live in `icons/generated/`.
+  No build step is required.

@@ -44,6 +44,27 @@ chrome.tabs.onRemoved.addListener(async (tabId, _info) => {
 // Messaging API
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const { type } = message || {};
+  if (type === 'ensureInjected') {
+    (async () => {
+      try {
+        const tabId = Number(message.tabId);
+        await chrome.scripting.executeScript({
+          target: { tabId },
+          files: ['content.js'],
+        });
+        // After injection, return current brightness for convenience
+        const value = await getBrightness(tabId);
+        sendResponse({ ok: true, value });
+      } catch (e) {
+        try {
+          // Best-effort: mark icon disabled for this tab if injection failed
+          await updateIconForTab(message.tabId);
+        } catch {}
+        sendResponse({ ok: false, error: String(e) });
+      }
+    })();
+    return true; // async
+  }
   if (type === 'getBrightness') {
     // From popup: expects tabId in message
     (async () => {
