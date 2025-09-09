@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.1 — 2025-09-08
+- Switch to explicit `activeTab` + `scripting` injection on popup open.
+- Detect restricted pages via failed injection (no hardcoded URL checks).
+- Remove icon build tooling and Node modules; keep pre-generated PNG icons.
+- Enlarge app icon by reducing padding; keep monochrome style.
+- Popup Reset uses provided monochrome SVG.
+
 ## v1.0.0 — 2025-09-08
 - Initial release.
 - Per‑tab brightness control via popup slider (0–100%).

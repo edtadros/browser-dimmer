@@ -9,8 +9,9 @@ Adjust the brightness of the current page only using a simple slider from the ex
  - One-click Reset button to return to 100%.
 
 ## How it works
-- A content script injects a CSS rule: `html { filter: brightness(var(--browser-dimmer-brightness, 1)) !important; }`
-- The popup slider sends updates to the background, which stores the brightness per tab and notifies the content script to update a CSS variable on the page.
+- When you open the popup (activeTab), the extension programmatically injects a small content script into the current tab using `chrome.scripting`.
+- The content script adds a CSS rule: `html { filter: brightness(var(--browser-dimmer-brightness, 1)) !important; }` and updates a CSS variable.
+- The popup slider sends updates to the background, which stores brightness per tab and notifies the content script to apply it.
 
 ## Install (Load Unpacked)
 1. Open Chrome and go to `chrome://extensions`.
@@ -18,7 +19,7 @@ Adjust the brightness of the current page only using a simple slider from the ex
 3. Click "Load unpacked" and select this folder.
 4. Pin the extension (optional), then click its icon to adjust brightness on the current tab.
 
-- ## Notes
+## Notes
 - Some pages do not allow extensions to run content scripts; brightness will not apply there. The extension detects this by attempting to inject on popup open and will disable controls with an explanatory message (no hardcoded URL list).
 - Existing tabs opened before installation may require a refresh to activate the content script.
 - Default brightness is 100% (no change). The extension supports up to 200% internally to allow potential brightening; the popup shows 0–100% by default.
